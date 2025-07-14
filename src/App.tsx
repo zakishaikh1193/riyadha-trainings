@@ -16,6 +16,7 @@ import './i18n';
 import AddSchoolPage from './pages/AddSchoolPage';
 import AddCategoryPage from './pages/AddCategoryPage';
 import { SchoolManagementRoutes } from './components/routes/SchoolManagementRoutes';
+import { CourseCategoryRoutes } from './components/routes/CourseCategoryRoutes';
 
 function App() {
   return (
@@ -88,6 +89,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <SchoolManagementRoutes />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/courses-categories/*"
+                  element={
+                    <ProtectedRoute>
+                      <CourseCategoryRoutes />
                     </ProtectedRoute>
                   }
                 />

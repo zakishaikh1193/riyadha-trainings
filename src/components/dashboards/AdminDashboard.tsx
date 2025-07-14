@@ -29,6 +29,7 @@ import { LoadingSpinner } from '../LoadingSpinner';
 import { CourseDetailsModal } from '../CourseDetailsModal';
 import { AIAnalyticsDashboard } from './AIAnalyticsDashboard';
 import { ManageSchools } from './admin/ManageSchools';
+import { ManageCoursesCategories } from './admin/ManageCoursesCategories';
 
 interface AdminStats {
   totalUsers: number;
@@ -61,6 +62,7 @@ export const AdminDashboard: React.FC = () => {
   const sidebarItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard', labelAr: 'لوحة التحكم' },
     { id: 'schools', icon: Building, label: 'Schools Management', labelAr: 'إدارة المدارس' },
+    { id: 'courses-categories', icon: BookOpen, label: 'Courses & Categories', labelAr: 'الدورات والفئات' },
     { id: 'training-completion', icon: TrendingUp, label: 'Training Completion', labelAr: 'إكمال التدريب' },
     { id: 'leadership-growth', icon: Users, label: 'Leadership Growth', labelAr: 'نمو القيادة' },
     { id: 'behavioral-insights', icon: Brain, label: 'Behavioral Insights', labelAr: 'رؤى سلوكية' },
@@ -272,6 +274,8 @@ export const AdminDashboard: React.FC = () => {
         return renderDashboardOverview();
       case 'schools':
         return <ManageSchools />;
+      case 'courses-categories':
+        return <ManageCoursesCategories />;
       case 'training-completion':
         return (
           <div className="bg-white rounded-xl shadow-lg p-6">
