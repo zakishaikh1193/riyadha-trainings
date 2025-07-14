@@ -373,6 +373,60 @@ export const apiService = {
     return '/images/default-course.svg';
   },
 
+  async getCoursesByCategory(categoryId: number): Promise<any[]> {
+    try {
+      const response = await api.get('', {
+        params: {
+          wsfunction: 'core_course_get_courses_by_field',
+          field: 'category',
+          value: categoryId.toString(),
+        },
+      });
+
+      if (response.data && response.data.courses && Array.isArray(response.data.courses)) {
+        return response.data.courses.filter((course: any) => course.visible !== 0);
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching courses by category:', error);
+      throw new Error('Failed to fetch courses by category');
+    }
+  },
+
+  async createCategory(categoryData: any): Promise<any> {
+    try {
+      const response = await api.post('', {
+        wsfunction: 'core_course_create_categories',
+        categories: [categoryData]
+      });
+
+      if (response.data && response.data.length > 0) {
+        return response.data[0];
+      }
+      throw new Error('Invalid response from API');
+    } catch (error) {
+      console.error('Error creating category:', error);
+      throw new Error('Failed to create category');
+    }
+  },
+
+  async createCourse(courseData: any): Promise<any> {
+    try {
+      const response = await api.post('', {
+        wsfunction: 'core_course_create_courses',
+        courses: [courseData]
+      });
+
+      if (response.data && response.data.length > 0) {
+        return response.data[0];
+      }
+      throw new Error('Invalid response from API');
+    } catch (error) {
+      console.error('Error creating course:', error);
+      throw new Error('Failed to create course');
+    }
+  },
+
   async getCourseEnrollments(courseId: string): Promise<any[]> {
     try {
       const response = await api.get('', {
