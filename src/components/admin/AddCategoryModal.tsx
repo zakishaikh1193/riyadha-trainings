@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FolderPlus, Save } from 'lucide-react';
+import axios from 'axios';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { LoadingSpinner } from '../LoadingSpinner';
 import { toast } from '../ui/Toaster';
-import { apiService } from '../../services/api';
 
 interface Category {
   id: number;
