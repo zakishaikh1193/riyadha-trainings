@@ -41,7 +41,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         animate={{ y: 0 }}
         className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full">
           <div className="flex justify-between items-center h-16">
             {/* Logo & Mobile Menu */}
             <div className="flex items-center">
@@ -117,7 +117,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
       )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="w-full flex-1">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

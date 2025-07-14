@@ -19,30 +19,47 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+const COMPANY_MANAGER_EMAILS = [
+  'noor_al_islam@gmail.com',
+  'alfaisaliahislamic@gmail.com',
+  // Add more known company manager emails here
+];
+
 // Enhanced role detection based on username patterns and user data
 const detectUserRole = (username: string, userData?: any): UserRole => {
-  const lowerUsername = username.toLowerCase();
-  
-  // Check for admin patterns
-  if (lowerUsername.includes('admin') || lowerUsername.includes('super') || lowerUsername.includes('system')) {
-    return 'admin';
+  // Check for custom field for company manager/school admin
+  if (userData && userData.customfields) {
+    const isCompanyManager = userData.customfields.some(
+      (f: any) =>
+        (f.shortname === 'company_manager' || f.shortname === 'school_admin') &&
+        (f.value === '1' || f.value === 1 || f.value === true)
+    );
+    if (isCompanyManager) {
+      console.log('DEBUG: Detected school_admin by custom field');
+      return 'school_admin';
+    }
   }
-  
-  // Check for trainer patterns
-  if (lowerUsername.includes('trainer') || lowerUsername.includes('instructor') || lowerUsername.includes('facilitator')) {
-    return 'trainer';
+
+  // If userData.roles is available, check for role assignments
+  if (userData && userData.roles && Array.isArray(userData.roles)) {
+    const roleNames = userData.roles.map((r: any) => (r.shortname || r.name || '').toLowerCase());
+    if (roleNames.includes('school_admin') || roleNames.includes('company_manager')) {
+      return 'school_admin';
+    }
+    if (roleNames.includes('admin') || roleNames.includes('superadmin') || roleNames.includes('system')) {
+      return 'admin';
+    }
+    if (roleNames.includes('trainer') || roleNames.includes('instructor') || roleNames.includes('facilitator')) {
+      return 'trainer';
+    }
+    if (roleNames.includes('principal') || roleNames.includes('head') || roleNames.includes('manager') || roleNames.includes('director')) {
+      return 'principal';
+    }
+    if (roleNames.includes('cluster_lead') || roleNames.includes('clusterlead') || roleNames.includes('coordinator')) {
+      return 'cluster_lead';
+    }
   }
-  
-  // Check for principal/manager patterns
-  if (lowerUsername.includes('principal') || lowerUsername.includes('head') || lowerUsername.includes('manager') || lowerUsername.includes('director')) {
-    return 'principal';
-  }
-  
-  // Check for cluster lead patterns
-  if (lowerUsername.includes('cluster') || lowerUsername.includes('lead') || lowerUsername.includes('coordinator')) {
-    return 'cluster_lead';
-  }
-  
+
   // Default to teacher for educational contexts
   return 'teacher';
 };
@@ -50,6 +67,7 @@ const detectUserRole = (username: string, userData?: any): UserRole => {
 export const apiService = {
   async authenticateUser(username: string, password: string): Promise<User | null> {
     try {
+      // 1. Get user by username
       const response = await api.get('', {
         params: {
           wsfunction: 'core_user_get_users_by_field',
@@ -59,9 +77,25 @@ export const apiService = {
       });
 
       if (response.data && response.data.length > 0) {
-        const userData = response.data[0];
+        let userData = response.data[0];
+        // 2. Fetch customfields using core_user_get_users
+        try {
+          const detailedResp = await api.get('', {
+            params: {
+              wsfunction: 'core_user_get_users',
+              criteria: [{ key: 'id', value: userData.id }],
+            },
+          });
+          if (detailedResp.data && detailedResp.data.users && detailedResp.data.users.length > 0) {
+            userData = { ...userData, ...detailedResp.data.users[0] };
+          }
+        } catch (e) {
+          // Ignore if fails, fallback to original userData
+        }
+        // Debug: log userData for troubleshooting role detection
+        console.log('DEBUG: Moodle userData', userData);
         const role = detectUserRole(username, userData);
-        
+        console.log('DEBUG: Detected role', role);
         return {
           id: userData.id.toString(),
           email: userData.email,
@@ -72,6 +106,7 @@ export const apiService = {
           profileimageurl: userData.profileimageurl,
           lastaccess: userData.lastaccess,
           role,
+          company: userData.company || (userData.customfields && userData.customfields.find((f: any) => f.shortname === 'companyid')?.value),
         };
       }
       return null;

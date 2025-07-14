@@ -33,6 +33,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -102,18 +103,48 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
               <LanguageToggle />
-              
+
               {/* Notifications */}
-              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative">
-                <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+              <div className="relative">
+                <button
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative"
+                  onClick={() => setShowNotifications((prev) => !prev)}
+                >
+                  <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                </button>
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50 p-4">
+                    <h4 className="font-semibold mb-2 text-gray-800 dark:text-gray-100">Notifications</h4>
+                    {/* TODO: Replace with real notifications */}
+                    <div className="text-sm text-gray-600 dark:text-gray-300">No new notifications.</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Settings */}
+              <button
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => navigate('/settings')}
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               </button>
 
               {/* User Menu */}
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
+                {user?.profileimageurl ? (
+                  <img
+                    src={user.profileimageurl}
+                    alt={user.firstname || 'Trainer'}
+                    className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                    onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/default-course.jpg'; }}
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                    {user?.firstname ? user.firstname[0] : 'T'}
+                  </div>
+                )}
                 <div className="hidden md:block">
                   <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {user?.fullname}

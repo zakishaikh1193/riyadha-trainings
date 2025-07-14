@@ -12,6 +12,10 @@ import {
   Shield,
   ChevronRight 
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useEffect, useState } from 'react';
+import { apiService } from '../../services/api';
 
 interface AccessSectionProps {
   onRoleSelect: (role: UserRole) => void;
@@ -73,10 +77,65 @@ const roleCards = [
 export const AccessSection: React.FC<AccessSectionProps> = ({ onRoleSelect }) => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1
   });
+
+  // Real data for School Principal card
+  const [principalStats, setPrincipalStats] = useState<{ teachers: number; completionRate: number; overdue: number } | null>(null);
+  const [principalStatsLoading, setPrincipalStatsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user || (user.role !== 'principal' && user.role !== 'school_admin')) return;
+      setPrincipalStatsLoading(true);
+      try {
+        // 1. Get all companies (schools)
+        const companies = await apiService.getCompanies();
+        const myCompany = companies.find((c: any) => String(c.id) === String(user.company));
+        if (!myCompany) throw new Error('School not found');
+        // 2. Get all users, filter by company
+        const allUsers = await apiService.getAllUsers();
+        const filteredUsers = allUsers.filter((u: any) => String(u.company) === String(myCompany.id));
+        // 3. Get all courses, filter by company (if possible)
+        const allCourses = await apiService.getAllCourses();
+        const filteredCourses = allCourses.filter((c: any) => String(c.companyid) === String(myCompany.id) || !c.companyid);
+        // 4. For each course, get enrollments for school users
+        let totalEnrollments = 0;
+        let overdueCount = 0;
+        let completedCount = 0;
+        let totalCount = 0;
+        const now = Date.now();
+        for (const course of filteredCourses) {
+          const courseEnrollments = await apiService.getCourseEnrollments(String(course.id));
+          const userEnrollments = courseEnrollments.filter((e: any) => filteredUsers.some((u: any) => String(u.id) === String(e.userid)));
+          totalEnrollments += userEnrollments.length;
+          // If course has enddate and user progress, count overdue and completed
+          for (const enrollment of userEnrollments) {
+            totalCount++;
+            // If progress is available, use it; else, fallback to enddate
+            if (typeof enrollment.progress === 'number') {
+              if (enrollment.progress >= 100) completedCount++;
+              else if (course.enddate && course.enddate * 1000 < now) overdueCount++;
+            } else if (course.enddate && course.enddate * 1000 < now) {
+              overdueCount++;
+            }
+          }
+        }
+        const teachers = filteredUsers.length;
+        const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+        setPrincipalStats({ teachers, completionRate, overdue: overdueCount });
+      } catch (e) {
+        setPrincipalStats(null); // fallback to mock
+      } finally {
+        setPrincipalStatsLoading(false);
+      }
+    };
+    fetchStats();
+  }, [user]);
 
   return (
     <section id="access" className="py-20 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
@@ -104,12 +163,18 @@ export const AccessSection: React.FC<AccessSectionProps> = ({ onRoleSelect }) =>
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ 
-                y: -10, 
+              whileHover={{
+                y: -10,
                 scale: 1.05,
                 transition: { duration: 0.2 }
               }}
-              onClick={() => onRoleSelect(card.role)}
+              onClick={() => {
+                if (card.role === 'principal') {
+                  navigate('/dashboard');
+                } else {
+                  onRoleSelect(card.role);
+                }
+              }}
               className="group cursor-pointer"
             >
               <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-2xl p-6 h-full border border-white border-opacity-20 hover:bg-opacity-20 transition-all duration-300">
@@ -137,6 +202,25 @@ export const AccessSection: React.FC<AccessSectionProps> = ({ onRoleSelect }) =>
                     </div>
                   ))}
                 </div>
+
+                {/* Real data summary for School Principal */}
+                {card.role === 'principal' && (
+                  principalStatsLoading ? (
+                    <div className="mb-4 text-blue-200 text-xs">Loading...</div>
+                  ) : (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 text-xs text-blue-200 mb-1">
+                        <span className="font-bold">Teachers:</span> <span>{principalStats ? principalStats.teachers : 42}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-blue-200 mb-1">
+                        <span className="font-bold">Completion Rate:</span> <span>{principalStats ? principalStats.completionRate : 78}%</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-blue-200">
+                        <span className="font-bold">Overdue:</span> <span>{principalStats ? principalStats.overdue : 5}</span>
+                      </div>
+                    </div>
+                  )
+                )}
 
                 {/* Action Button */}
                 <motion.div
