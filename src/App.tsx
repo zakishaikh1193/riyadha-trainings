@@ -15,6 +15,7 @@ import { Toaster } from './components/ui/Toaster';
 import './i18n';
 import AddSchoolPage from './pages/AddSchoolPage';
 import AddCategoryPage from './pages/AddCategoryPage';
+import { SchoolManagementRoutes } from './components/routes/SchoolManagementRoutes';
 
 function App() {
   return (
@@ -79,6 +80,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <AddCategoryPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/add-school/*"
+                  element={
+                    <ProtectedRoute>
+                      <SchoolManagementRoutes />
                     </ProtectedRoute>
                   }
                 />

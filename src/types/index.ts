@@ -49,6 +49,29 @@ export interface School {
   description?: string;
   status?: string;
   country?: string;
+  city?: string;
+  address?: string;
+  region?: string;
+  postcode?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  userCount?: number;
+  courseCount?: number;
+  suspended?: boolean;
+  ecommerce?: number;
+  parentId?: number;
+  customCss?: string;
+  theme?: string;
+  hostname?: string;
+  maxUsers?: number;
+  validTo?: string;
+  mainColor?: string;
+  headingColor?: string;
+  linkColor?: string;
+  custom1?: string;
+  custom2?: string;
+  custom3?: string;
 }
 
 export interface ApiResponse<T> {

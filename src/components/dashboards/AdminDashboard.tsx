@@ -22,11 +22,13 @@ import {
   Download,
   Search,
   Filter,
-  ChevronRight
+  ChevronRight,
+  Building
 } from 'lucide-react';
 import { LoadingSpinner } from '../LoadingSpinner';
 import { CourseDetailsModal } from '../CourseDetailsModal';
 import { AIAnalyticsDashboard } from './AIAnalyticsDashboard';
+import { ManageSchools } from './admin/ManageSchools';
 
 interface AdminStats {
   totalUsers: number;
@@ -58,6 +60,7 @@ export const AdminDashboard: React.FC = () => {
 
   const sidebarItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard', labelAr: 'لوحة التحكم' },
+    { id: 'schools', icon: Building, label: 'Schools Management', labelAr: 'إدارة المدارس' },
     { id: 'training-completion', icon: TrendingUp, label: 'Training Completion', labelAr: 'إكمال التدريب' },
     { id: 'leadership-growth', icon: Users, label: 'Leadership Growth', labelAr: 'نمو القيادة' },
     { id: 'behavioral-insights', icon: Brain, label: 'Behavioral Insights', labelAr: 'رؤى سلوكية' },
@@ -267,6 +270,8 @@ export const AdminDashboard: React.FC = () => {
     switch (activeSection) {
       case 'dashboard':
         return renderDashboardOverview();
+      case 'schools':
+        return <ManageSchools />;
       case 'training-completion':
         return (
           <div className="bg-white rounded-xl shadow-lg p-6">
