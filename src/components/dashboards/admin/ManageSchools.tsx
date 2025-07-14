@@ -157,9 +157,9 @@ export const ManageSchools: React.FC = () => {
   };
 
   const filteredSchools = schools.filter(school =>
-    school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    school.shortname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    school.country?.toLowerCase().includes(searchTerm.toLowerCase())
+    (school.name ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (school.shortname ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (school.country ?? '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const renderFeaturesView = () => (
