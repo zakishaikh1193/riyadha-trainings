@@ -604,3 +604,40 @@ export const apiService = {
     }
   }
 };
+
+export async function createCategory(categoryData: {
+  name: string;
+  parent?: number;
+  idnumber?: string;
+  description?: string;
+  descriptionformat?: number;
+}) {
+  const url = API_URL;
+  const params = new URLSearchParams();
+  params.append('wstoken', '4a2ba2d6742afc7d13ce4cf486ba7633'); // <-- Replace with your real token
+  params.append('wsfunction', 'core_course_create_categories');
+  params.append('moodlewsrestformat', 'json');
+
+  params.append('categories[0][name]', categoryData.name);
+  params.append('categories[0][parent]', String(categoryData.parent ?? 0));
+  if (categoryData.idnumber) params.append('categories[0][idnumber]', categoryData.idnumber);
+  if (categoryData.description) params.append('categories[0][description]', categoryData.description);
+  if (categoryData.descriptionformat !== undefined) params.append('categories[0][descriptionformat]', String(categoryData.descriptionformat));
+
+  try {
+    // Use direct URL instead of variable and ensure it's a form POST request
+    const response = await axios.post('https://iomad.bylinelms.com/webservice/rest/server.php', params, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    
+    console.log('Category API response:', response.data); // Debug log
+    if (response.data && Array.isArray(response.data) && response.data[0].id) {
+      return response.data[0];
+    }
+    throw new Error('Failed to create category: Invalid response');
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to create category');
+  }
+}
