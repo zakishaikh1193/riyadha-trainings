@@ -70,14 +70,27 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 
     setLoading(true);
     try {
-      const categoryData = {
-        name: formData.name.trim(),
-        parent: formData.parent,
-        description: formData.description.trim(),
-        descriptionformat: 1
-      };
-
-      const newCategory = await apiService.createCategory(categoryData);
+      // Create URL-encoded form data for POST request
+      const params = new URLSearchParams();
+      params.append('wstoken', '4a2ba2d6742afc7d13ce4cf486ba7633');
+      params.append('wsfunction', 'core_course_create_categories');
+      params.append('moodlewsrestformat', 'json');
+      params.append('categories[0][name]', formData.name.trim());
+      params.append('categories[0][parent]', formData.parent.toString());
+      
+      if (formData.description.trim()) {
+        params.append('categories[0][description]', formData.description.trim());
+        params.append('categories[0][descriptionformat]', '1');
+      }
+      
+      const response = await axios.post('https://iomad.bylinelms.com/webservice/rest/server.php', params);
+      
+      let newCategory;
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        newCategory = response.data[0];
+      } else {
+        throw new Error('Invalid response from API');
+      }
       
       if (newCategory) {
         onCategoryCreated(newCategory);
